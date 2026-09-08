@@ -117,7 +117,7 @@
     <div>
         <div>{{ partido.equipo_local.nombre }} vs {{ partido.equipo_visitante.nombre }}</div>
         <div class="muted">
-            {{ partido.categoria.nombre }} - {{ partido.numero_fecha|etiqueta_fecha|default:"Sin fecha fixture" }} - {{ partido.grupo|default:"Sin grupo" }}
+            {{ partido.categoria.nombre }} - {{ partido.numero_fecha|etiqueta_fecha|default:"Sin fecha fixture" }}{% if partido.mostrar_grupo_gestion %} - Grupo {{ partido.grupo }}{% endif %}
         </div>
         <div class="muted">
             {{ partido.fecha|default:"Sin dia" }} - {% if partido.hora %}{{ partido.hora|hora_12 }}{% else %}Sin hora{% endif %} - {{ partido.cancha|default:"Sin cancha" }} - {{ partido.estado }}

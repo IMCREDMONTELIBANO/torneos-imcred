@@ -9636,6 +9636,34 @@ def gestion_partidos(request):
     if fecha_fixture:
         partidos = partidos.filter(numero_fecha=fecha_fixture)
 
+    # En gestión la jornada del fixture es el criterio principal. Muchos
+    # partidos importados conservan la misma fecha/hora provisional; ordenar
+    # solo por esos campos hacía que el desempate por id mostrara Fecha 15
+    # antes que Fecha 1.
+    partidos = list(partidos)
+    partidos.sort(key=lambda partido: (
+        0 if partido.estado == "EN_JUEGO" else (
+            1 if partido.estado in ["PROGRAMADO", "APLAZADO", "SUSPENDIDO"] else 2
+        ),
+        clave_orden_fecha_fixture(partido.numero_fecha),
+        partido.fecha or date.max,
+        partido.hora or time.max,
+        partido.id,
+    ))
+
+    categoria_ids = {partido.categoria_id for partido in partidos}
+    grupos_por_categoria = defaultdict(set)
+    for cat_id, grupo in Partido.objects.filter(
+        categoria_id__in=categoria_ids,
+    ).exclude(
+        grupo__isnull=True,
+    ).exclude(
+        grupo="",
+    ).values_list("categoria_id", "grupo"):
+        grupos_por_categoria[cat_id].add(grupo.strip().upper())
+    for partido in partidos:
+        partido.mostrar_grupo_gestion = len(grupos_por_categoria[partido.categoria_id]) > 1
+
     return render(request, "gestion/partidos.html", {
         "partidos": partidos,
         "categorias": categorias,

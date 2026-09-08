@@ -1303,6 +1303,49 @@ class PlanillasJuegoUploadTests(TestCase):
 
         self.assertLess(ids.index(antiguo.id), ids.index(futuro.id))
 
+    def test_gestion_partidos_ordena_numero_fecha_natural_con_misma_programacion(self):
+        fecha_quince = Partido.objects.create(
+            categoria=self.categoria, equipo_local=self.equipo_local,
+            equipo_visitante=self.equipo_visitante,
+            fecha=date(2026, 8, 19), hora=time(12),
+            estado="PROGRAMADO", numero_fecha="Fecha 15", grupo="A",
+        )
+        fecha_dos = Partido.objects.create(
+            categoria=self.categoria, equipo_local=self.equipo_local,
+            equipo_visitante=self.equipo_visitante,
+            fecha=date(2026, 8, 19), hora=time(12),
+            estado="PROGRAMADO", numero_fecha="Fecha 2", grupo="A",
+        )
+        administrador = User.objects.create_superuser("admin-orden-natural", "natural@example.com", "clave")
+        self.client.force_login(administrador)
+        session = self.client.session
+        session["torneo_id"] = self.torneo.id
+        session.save()
+
+        respuesta = self.client.get("/gestion/partidos/")
+        partidos = list(respuesta.context["partidos"])
+
+        self.assertLess(partidos.index(fecha_dos), partidos.index(fecha_quince))
+
+    def test_gestion_partidos_oculta_grupo_si_categoria_tiene_un_solo_grupo(self):
+        partido = Partido.objects.create(
+            categoria=self.categoria, equipo_local=self.equipo_local,
+            equipo_visitante=self.equipo_visitante,
+            fecha=date(2026, 8, 19), hora=time(12),
+            estado="PROGRAMADO", numero_fecha="Fecha 2", grupo="A",
+        )
+        administrador = User.objects.create_superuser("admin-grupo-unico", "grupo@example.com", "clave")
+        self.client.force_login(administrador)
+        session = self.client.session
+        session["torneo_id"] = self.torneo.id
+        session.save()
+
+        respuesta = self.client.get("/gestion/partidos/")
+        partido_renderizado = next(p for p in respuesta.context["partidos"] if p.id == partido.id)
+
+        self.assertFalse(partido_renderizado.mostrar_grupo_gestion)
+        self.assertNotContains(respuesta, "Fecha 2 - Grupo A")
+
     def test_gestion_partidos_considera_suspendido_reprogramado_como_proximo(self):
         suspendido = Partido.objects.create(
             categoria=self.categoria, equipo_local=self.equipo_local,
