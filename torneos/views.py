@@ -7834,6 +7834,26 @@ def ordenar_partidos_gestion(partidos):
     )
 
 
+def clave_orden_partido_gestion(partido):
+    listo_para_planilla = (
+        partido.estado == "PROGRAMADO"
+        and partido.estado_programacion != "SUGERIDA"
+        and bool(partido.cancha)
+    )
+    prioridad = 0 if listo_para_planilla else (
+        1 if partido.estado == "EN_JUEGO" else (
+            2 if partido.estado in ["PROGRAMADO", "APLAZADO", "SUSPENDIDO"] else 3
+        )
+    )
+    return (
+        prioridad,
+        clave_orden_fecha_fixture(partido.numero_fecha),
+        partido.fecha or date.max,
+        partido.hora or time.max,
+        partido.id,
+    )
+
+
 def _partidos_planillas_para_usuario(user, torneo=None):
     partidos = Partido.objects.select_related(
         "categoria",
@@ -7956,16 +7976,27 @@ def gestion_planillas_juego(request):
 
     documentos = documentos_base.filter(partido__in=partidos_resultado)
     categorias = Categoria.objects.filter(partido__in=partidos_base).distinct().order_by("nombre")
-    fechas = partidos_base.exclude(numero_fecha__isnull=True).exclude(numero_fecha="").order_by("numero_fecha").values_list("numero_fecha", flat=True).distinct()
+    fechas = sorted(
+        set(
+            partidos_base.exclude(numero_fecha__isnull=True)
+            .exclude(numero_fecha="")
+            .values_list("numero_fecha", flat=True)
+        ),
+        key=clave_orden_fecha_fixture,
+    )
     partidos = partidos_base
     if categoria_id:
         partidos = partidos.filter(categoria_id=categoria_id)
     if numero_fecha:
         partidos = partidos.filter(numero_fecha=numero_fecha)
-    partidos = ordenar_partidos_gestion(partidos.distinct())
+    partidos = sorted(list(partidos.distinct()), key=clave_orden_partido_gestion)
+    partidos_resultado_ordenados = sorted(
+        list(partidos_resultado[:500]),
+        key=clave_orden_partido_gestion,
+    )
 
     return render(request, "gestion/planillas_juego.html", {
-        "grupos_planillas": _agrupar_partidos_planillas(partidos_resultado[:500], documentos),
+        "grupos_planillas": _agrupar_partidos_planillas(partidos_resultado_ordenados, documentos),
         "categorias": categorias,
         "fechas": fechas,
         "partidos": partidos,
@@ -9641,21 +9672,7 @@ def gestion_partidos(request):
     # solo por esos campos hacía que el desempate por id mostrara Fecha 15
     # antes que Fecha 1.
     partidos = list(partidos)
-    partidos.sort(key=lambda partido: (
-        0 if (
-            partido.estado == "PROGRAMADO"
-            and partido.estado_programacion != "SUGERIDA"
-            and bool(partido.cancha)
-        ) else (
-            1 if partido.estado == "EN_JUEGO" else (
-                2 if partido.estado in ["PROGRAMADO", "APLAZADO", "SUSPENDIDO"] else 3
-            )
-        ),
-        clave_orden_fecha_fixture(partido.numero_fecha),
-        partido.fecha or date.max,
-        partido.hora or time.max,
-        partido.id,
-    ))
+    partidos.sort(key=clave_orden_partido_gestion)
 
     categoria_ids = {partido.categoria_id for partido in partidos}
     grupos_por_categoria = defaultdict(set)

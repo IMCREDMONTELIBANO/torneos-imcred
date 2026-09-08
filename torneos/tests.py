@@ -1372,6 +1372,33 @@ class PlanillasJuegoUploadTests(TestCase):
 
         self.assertLess(partidos.index(listo), partidos.index(sin_cancha))
 
+    def test_planillas_juego_ordena_fechas_fixture_de_forma_natural(self):
+        fecha_quince = Partido.objects.create(
+            categoria=self.categoria, equipo_local=self.equipo_local,
+            equipo_visitante=self.equipo_visitante,
+            fecha=date(2026, 8, 19), hora=time(12),
+            estado="PROGRAMADO", numero_fecha="Fecha 15",
+        )
+        fecha_dos = Partido.objects.create(
+            categoria=self.categoria, equipo_local=self.equipo_local,
+            equipo_visitante=self.equipo_visitante,
+            fecha=date(2026, 8, 19), hora=time(12),
+            estado="PROGRAMADO", numero_fecha="Fecha 2",
+        )
+        fecha_quince.planilleros.add(self.planillero)
+        fecha_dos.planilleros.add(self.planillero)
+        self.client.force_login(self.planillero)
+
+        respuesta = self.client.get("/gestion/planillas-juego/")
+        fechas = [
+            fecha.nombre
+            for categoria in respuesta.context["grupos_planillas"]
+            for fecha in categoria.fechas
+        ]
+
+        self.assertLess(fechas.index("Fecha 2"), fechas.index("Fecha 15"))
+        self.assertEqual(list(respuesta.context["fechas"])[:2], ["Fecha 1", "Fecha 2"])
+
     def test_gestion_partidos_considera_suspendido_reprogramado_como_proximo(self):
         suspendido = Partido.objects.create(
             categoria=self.categoria, equipo_local=self.equipo_local,
