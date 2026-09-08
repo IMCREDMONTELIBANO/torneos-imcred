@@ -9642,8 +9642,14 @@ def gestion_partidos(request):
     # antes que Fecha 1.
     partidos = list(partidos)
     partidos.sort(key=lambda partido: (
-        0 if partido.estado == "EN_JUEGO" else (
-            1 if partido.estado in ["PROGRAMADO", "APLAZADO", "SUSPENDIDO"] else 2
+        0 if (
+            partido.estado == "PROGRAMADO"
+            and partido.estado_programacion != "SUGERIDA"
+            and bool(partido.cancha)
+        ) else (
+            1 if partido.estado == "EN_JUEGO" else (
+                2 if partido.estado in ["PROGRAMADO", "APLAZADO", "SUSPENDIDO"] else 3
+            )
         ),
         clave_orden_fecha_fixture(partido.numero_fecha),
         partido.fecha or date.max,

@@ -1346,6 +1346,32 @@ class PlanillasJuegoUploadTests(TestCase):
         self.assertFalse(partido_renderizado.mostrar_grupo_gestion)
         self.assertNotContains(respuesta, "Fecha 2 - Grupo A")
 
+    def test_gestion_partidos_pone_primero_los_listos_para_descargar_planilla(self):
+        sin_cancha = Partido.objects.create(
+            categoria=self.categoria, equipo_local=self.equipo_local,
+            equipo_visitante=self.equipo_visitante,
+            fecha=date(2026, 8, 19), hora=time(10),
+            estado="PROGRAMADO", estado_programacion="MANUAL",
+            numero_fecha="Fecha 1", cancha="",
+        )
+        listo = Partido.objects.create(
+            categoria=self.categoria, equipo_local=self.equipo_local,
+            equipo_visitante=self.equipo_visitante,
+            fecha=date(2026, 8, 20), hora=time(10),
+            estado="PROGRAMADO", estado_programacion="OFICIAL",
+            numero_fecha="Fecha 2", cancha="Cancha principal",
+        )
+        administrador = User.objects.create_superuser("admin-planilla-lista", "planilla-lista@example.com", "clave")
+        self.client.force_login(administrador)
+        session = self.client.session
+        session["torneo_id"] = self.torneo.id
+        session.save()
+
+        respuesta = self.client.get("/gestion/partidos/")
+        partidos = list(respuesta.context["partidos"])
+
+        self.assertLess(partidos.index(listo), partidos.index(sin_cancha))
+
     def test_gestion_partidos_considera_suspendido_reprogramado_como_proximo(self):
         suspendido = Partido.objects.create(
             categoria=self.categoria, equipo_local=self.equipo_local,
