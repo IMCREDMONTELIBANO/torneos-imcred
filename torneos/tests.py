@@ -2062,11 +2062,12 @@ class TablaPosicionesWoTests(TestCase):
             {
                 "categoria": categoria.nombre,
                 "grupo": "A",
-                "datos_grupo": {"tabla": tabla},
+                "datos_grupo": {"tabla": tabla, "tiene_ajuste_administrativo": True},
             },
         )
-        self.assertIn("⚖ +3", html)
-        self.assertIn("⚖ -3", html)
+        self.assertIn("ADM +3", html)
+        self.assertIn("ADM -3", html)
+        self.assertIn("ADM: ajuste administrativo incluido en los puntos.", html)
 
 
 class TablaPosicionesDesempateTarjetasTests(TestCase):

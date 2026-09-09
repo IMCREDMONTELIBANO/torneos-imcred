@@ -2459,14 +2459,18 @@ body.solo-lectura .menu-principal {
         display: block;
         width: max-content;
         margin: 3px auto 0;
-        padding: 2px 5px;
-        border-radius: 999px;
-        background: #fff3bf;
-        color: #7a4b00;
+        color: #facc15;
         font-size: 9px;
         font-weight: 900;
         line-height: 1.15;
         white-space: nowrap;
+        text-shadow: none;
+    }
+    .nota-ajuste-administrativo {
+        margin: 7px 0 0;
+        color: #b9c5d6;
+        font-size: 10px;
+        text-align: right;
     }
 
     .tabla-responsive th {
@@ -5643,12 +5647,13 @@ body.solo-lectura .menu-principal{top:96px!important}
                                 <td>{{ equipo.dg }}</td>
                                 <td class="celda-total">
                                     {{ equipo.pts }}
-                                    {% if equipo.ajuste_puntos %}<span class="ajuste-administrativo-tabla" title="Ajuste administrativo">⚖ {% if equipo.ajuste_puntos > 0 %}+{% endif %}{{ equipo.ajuste_puntos }}</span>{% endif %}
+                                    {% if equipo.ajuste_puntos %}<span class="ajuste-administrativo-tabla" title="Ajuste administrativo">ADM {% if equipo.ajuste_puntos > 0 %}+{% endif %}{{ equipo.ajuste_puntos }}</span>{% endif %}
                                 </td>
                             </tr>
                             {% endfor %}
                         </table>
                     </div>
+                    {% if datos_categoria.tabla_general_tiene_ajuste_administrativo %}<p class="nota-ajuste-administrativo">ADM: ajuste administrativo incluido en los puntos.</p>{% endif %}
                 </div>
             {% endif %}
 
@@ -5707,7 +5712,7 @@ body.solo-lectura .menu-principal{top:96px!important}
                                 <td>{{ equipo.dg }}</td>
                                 <td class="celda-total">
                                     {{ equipo.pts }}
-                                    {% if equipo.ajuste_puntos %}<span class="ajuste-administrativo-tabla" title="Ajuste administrativo">⚖ {% if equipo.ajuste_puntos > 0 %}+{% endif %}{{ equipo.ajuste_puntos }}</span>{% endif %}
+                                    {% if equipo.ajuste_puntos %}<span class="ajuste-administrativo-tabla" title="Ajuste administrativo">ADM {% if equipo.ajuste_puntos > 0 %}+{% endif %}{{ equipo.ajuste_puntos }}</span>{% endif %}
                                 </td>
                             </tr>
                             {% empty %}
@@ -5717,6 +5722,7 @@ body.solo-lectura .menu-principal{top:96px!important}
                             {% endfor %}
                         </table>
                     </div>
+                    {% if datos_grupo.tiene_ajuste_administrativo %}<p class="nota-ajuste-administrativo">ADM: ajuste administrativo incluido en los puntos.</p>{% endif %}
                 </div>
                 {% endif %}
             {% empty %}

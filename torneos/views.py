@@ -2347,6 +2347,9 @@ def construir_estructura(torneo=None):
                     x["equipo"].casefold(),
                 ),
             )
+            datos_grupo["tiene_ajuste_administrativo"] = any(
+                equipo["ajuste_puntos"] for equipo in datos_grupo["tabla"]
+            )
 
         datos_categoria["disciplina_equipos"] = sorted(
             disciplina_equipos.values(),
@@ -2361,6 +2364,9 @@ def construir_estructura(torneo=None):
                 x["puntos_disciplina"],
                 x["equipo"].casefold(),
             ),
+        )
+        datos_categoria["tabla_general_tiene_ajuste_administrativo"] = any(
+            equipo["ajuste_puntos"] for equipo in datos_categoria["tabla_general_mata_mata"]
         )
 
     goleadores_temp = defaultdict(lambda: defaultdict(lambda: {
@@ -3781,7 +3787,10 @@ def descargar_tabla_general_mata_mata(request, categoria):
     html = render_to_string("descargas/tabla_grupo.html", {
         "categoria": categoria,
         "grupo": "General mata-mata",
-        "datos_grupo": {"tabla": tabla_general},
+        "datos_grupo": {
+            "tabla": tabla_general,
+            "tiene_ajuste_administrativo": datos_categoria.get("tabla_general_tiene_ajuste_administrativo", False),
+        },
         "logo_alcaldia": logos["logo_alcaldia"],
         "logo_torneo": logos["logo_torneo"],
         "logo_imcred": logos["logo_imcred"],
