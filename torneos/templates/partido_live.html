@@ -153,6 +153,32 @@ button.live-icon {
 .score-center {
     text-align: center;
 }
+.decision-comite {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 6px 10px;
+    margin: -7px auto 11px;
+    padding: 7px 10px;
+    width: fit-content;
+    max-width: 100%;
+    border: 1px solid rgba(245, 184, 0, .42);
+    border-radius: 12px;
+    background: rgba(245, 184, 0, .10);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 800;
+}
+.decision-comite strong { color: #facc15; }
+.decision-comite span { white-space: nowrap; }
+.decision-comite details { max-width: min(460px, 100%); }
+.decision-comite summary { color: #fde68a; cursor: pointer; }
+.decision-comite p {
+    margin: 6px 0 0;
+    color: rgba(255,255,255,.78);
+    line-height: 1.35;
+}
 .score-main {
     font-size: 42px;
     font-weight: 1000;
@@ -1289,6 +1315,21 @@ button.live-icon {
             <span>{% if ganador_visitante %}<b class="live-winner-star">&#9733;</b>{% endif %}{{ partido.equipo_visitante.nombre }}</span>
         </div>
     </section>
+
+    {% if partido.ajuste_puntos_local or partido.ajuste_puntos_visitante %}
+    <aside class="decision-comite" aria-label="Decisión administrativa">
+        <strong>Decisión administrativa</strong>
+        {% if partido.ajuste_puntos_local %}
+        <span>{{ partido.equipo_local.nombre }}: {% if partido.ajuste_puntos_local > 0 %}+{% endif %}{{ partido.ajuste_puntos_local }} pts</span>
+        {% endif %}
+        {% if partido.ajuste_puntos_visitante %}
+        <span>{{ partido.equipo_visitante.nombre }}: {% if partido.ajuste_puntos_visitante > 0 %}+{% endif %}{{ partido.ajuste_puntos_visitante }} pts</span>
+        {% endif %}
+        {% if partido.observacion_comite %}
+        <details><summary>Ver motivo</summary><p>{{ partido.observacion_comite }}</p></details>
+        {% endif %}
+    </aside>
+    {% endif %}
 
     <nav class="primary-tabs">
         <button type="button" class="activa" data-live-tab="resumen">RESUMEN</button>

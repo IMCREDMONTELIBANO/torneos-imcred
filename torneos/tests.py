@@ -3070,6 +3070,35 @@ class PlanilleroPartidoTests(TestCase):
         "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
         "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"},
     })
+    def test_live_muestra_ajuste_administrativo_compacto(self):
+        self.partido.ajuste_puntos_local = 3
+        self.partido.ajuste_puntos_visitante = -3
+        self.partido.observacion_comite = "Decisión por demanda aceptada."
+        self.partido.save(update_fields=[
+            "ajuste_puntos_local", "ajuste_puntos_visitante", "observacion_comite",
+        ])
+
+        respuesta = self.client.get(f"/partido/{self.partido.id}/live/")
+
+        self.assertContains(respuesta, "Decisión administrativa")
+        self.assertContains(respuesta, f"{self.local.nombre}: +3 pts")
+        self.assertContains(respuesta, f"{self.visitante.nombre}: -3 pts")
+        self.assertContains(respuesta, "Ver motivo")
+        self.assertContains(respuesta, "Decisión por demanda aceptada.")
+
+    @override_settings(STORAGES={
+        "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+        "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"},
+    })
+    def test_live_oculta_decision_administrativa_sin_ajustes(self):
+        respuesta = self.client.get(f"/partido/{self.partido.id}/live/")
+
+        self.assertNotContains(respuesta, "Decisión administrativa")
+
+    @override_settings(STORAGES={
+        "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+        "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"},
+    })
     def test_editor_movil_muestra_edad_en_alineacion(self):
         self.client.force_login(self.planillero)
 
