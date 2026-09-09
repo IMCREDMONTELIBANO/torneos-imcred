@@ -2026,6 +2026,37 @@ class TablaPosicionesWoTests(TestCase):
         self.assertEqual(fila_perdedor["pp"], 1)
         self.assertEqual(fila_perdedor["pts"], 0)
 
+    def test_tabla_identifica_ajustes_administrativos(self):
+        torneo = Torneo.objects.create(nombre="Demanda", fecha_inicio=date(2026, 1, 1))
+        categoria = Categoria.objects.create(
+            nombre="Senior demanda", edad_minima=18, edad_maxima=60, torneo=torneo,
+        )
+        favorecido = Equipo.objects.create(nombre="Favorecido", categoria=categoria)
+        sancionado = Equipo.objects.create(nombre="Sancionado", categoria=categoria)
+        Partido.objects.create(
+            categoria=categoria,
+            equipo_local=favorecido,
+            equipo_visitante=sancionado,
+            fecha=date(2026, 5, 2),
+            hora=time(15, 0),
+            estado="DECIDIDO_COMITE",
+            estadisticas_validadas=True,
+            fase="GRUPOS",
+            grupo="A",
+            numero_fecha="1",
+            goles_local=0,
+            goles_visitante=0,
+            ajuste_puntos_local=3,
+            ajuste_puntos_visitante=-3,
+        )
+
+        tabla = construir_estructura(torneo)[categoria.nombre]["grupos"]["A"]["tabla"]
+        fila_favorecido = next(fila for fila in tabla if fila["id"] == favorecido.id)
+        fila_sancionado = next(fila for fila in tabla if fila["id"] == sancionado.id)
+
+        self.assertEqual(fila_favorecido["ajuste_puntos"], 3)
+        self.assertEqual(fila_sancionado["ajuste_puntos"], -3)
+
 
 class TablaPosicionesDesempateTarjetasTests(TestCase):
     def test_menos_tarjetas_desempata_equipos_con_igual_rendimiento(self):

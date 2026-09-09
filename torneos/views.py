@@ -2214,6 +2214,7 @@ def construir_estructura(torneo=None):
                     "gc": 0,
                     "dg": 0,
                     "pts": 0,
+                    "ajuste_puntos": 0,
                     "ta": 0,
                     "tr": 0,
                     "puntos_disciplina": 0,
@@ -2280,6 +2281,8 @@ def construir_estructura(torneo=None):
             if resultado_oficial:
                 local["pts"] += partido.ajuste_puntos_local or 0
                 visitante["pts"] += partido.ajuste_puntos_visitante or 0
+                local["ajuste_puntos"] += partido.ajuste_puntos_local or 0
+                visitante["ajuste_puntos"] += partido.ajuste_puntos_visitante or 0
 
             for tarjeta in partido.tarjetas.all():
                 fila_equipo = datos_grupo["tabla"].get(tarjeta.equipo_id)
@@ -2323,12 +2326,13 @@ def construir_estructura(torneo=None):
                         "gc": 0,
                         "dg": 0,
                         "pts": 0,
+                        "ajuste_puntos": 0,
                         "ta": 0,
                         "tr": 0,
                         "puntos_disciplina": 0,
                         "partidos_en_vivo": [],
                     })
-                    for campo in ["pj", "pg", "pe", "pp", "gf", "gc", "pts", "ta", "tr", "puntos_disciplina"]:
+                    for campo in ["pj", "pg", "pe", "pp", "gf", "gc", "pts", "ajuste_puntos", "ta", "tr", "puntos_disciplina"]:
                         acumulado[campo] += equipo[campo]
                     acumulado["dg"] = acumulado["gf"] - acumulado["gc"]
                     acumulado["partidos_en_vivo"].extend(equipo["partidos_en_vivo"])

@@ -2455,6 +2455,19 @@ body.solo-lectura .menu-principal {
         padding: 7px 8px !important;
         font-size: 13px !important;
     }
+    .ajuste-administrativo-tabla {
+        display: block;
+        width: max-content;
+        margin: 3px auto 0;
+        padding: 2px 5px;
+        border-radius: 999px;
+        background: #fff3bf;
+        color: #7a4b00;
+        font-size: 9px;
+        font-weight: 900;
+        line-height: 1.15;
+        white-space: nowrap;
+    }
 
     .tabla-responsive th {
         padding: 6px !important;
@@ -5628,7 +5641,10 @@ body.solo-lectura .menu-principal{top:96px!important}
                                 <td>{{ equipo.gf }}</td>
                                 <td>{{ equipo.gc }}</td>
                                 <td>{{ equipo.dg }}</td>
-                                <td class="celda-total">{{ equipo.pts }}</td>
+                                <td class="celda-total">
+                                    {{ equipo.pts }}
+                                    {% if equipo.ajuste_puntos %}<span class="ajuste-administrativo-tabla" title="Ajuste administrativo">⚖ {% if equipo.ajuste_puntos > 0 %}+{% endif %}{{ equipo.ajuste_puntos }}</span>{% endif %}
+                                </td>
                             </tr>
                             {% endfor %}
                         </table>
@@ -5689,7 +5705,10 @@ body.solo-lectura .menu-principal{top:96px!important}
                                 <td>{{ equipo.gf }}</td>
                                 <td>{{ equipo.gc }}</td>
                                 <td>{{ equipo.dg }}</td>
-                                <td class="celda-total">{{ equipo.pts }}</td>
+                                <td class="celda-total">
+                                    {{ equipo.pts }}
+                                    {% if equipo.ajuste_puntos %}<span class="ajuste-administrativo-tabla" title="Ajuste administrativo">⚖ {% if equipo.ajuste_puntos > 0 %}+{% endif %}{{ equipo.ajuste_puntos }}</span>{% endif %}
+                                </td>
                             </tr>
                             {% empty %}
                             <tr>
