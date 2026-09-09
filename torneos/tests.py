@@ -2057,6 +2057,17 @@ class TablaPosicionesWoTests(TestCase):
         self.assertEqual(fila_favorecido["ajuste_puntos"], 3)
         self.assertEqual(fila_sancionado["ajuste_puntos"], -3)
 
+        html = render_to_string(
+            "descargas/tabla_grupo.html",
+            {
+                "categoria": categoria.nombre,
+                "grupo": "A",
+                "datos_grupo": {"tabla": tabla},
+            },
+        )
+        self.assertIn("⚖ +3", html)
+        self.assertIn("⚖ -3", html)
+
 
 class TablaPosicionesDesempateTarjetasTests(TestCase):
     def test_menos_tarjetas_desempata_equipos_con_igual_rendimiento(self):
