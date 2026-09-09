@@ -1754,6 +1754,42 @@ class CronometroEventoTests(TestCase):
         self.assertEqual(alineacion.equipo, equipo)
         self.assertEqual(alineacion.rol, "SUPLENTE")
 
+    def test_sustitucion_actualiza_dorsal_del_jugador_que_entra(self):
+        torneo = Torneo.objects.create(nombre="Dorsales", fecha_inicio=date(2026, 1, 1))
+        categoria = Categoria.objects.create(nombre="Senior", edad_minima=18, edad_maxima=60, torneo=torneo)
+        equipo = Equipo.objects.create(nombre="Local dorsal", categoria=categoria)
+        rival = Equipo.objects.create(nombre="Visitante dorsal", categoria=categoria)
+        jugador_sale = Jugador.objects.create(
+            equipo=equipo, nombres="Jugador Sale", cedula="DS1", fecha_nacimiento=date(1990, 1, 1),
+        )
+        jugador_entra = Jugador.objects.create(
+            equipo=equipo, nombres="Jugador Entra", cedula="DE1", fecha_nacimiento=date(1991, 1, 1),
+        )
+        partido = Partido.objects.create(
+            categoria=categoria, equipo_local=equipo, equipo_visitante=rival,
+            fecha=date(2026, 6, 1), hora=time(16, 0), estado="EN_JUEGO",
+        )
+        AlineacionPartido.objects.create(
+            partido=partido, equipo=equipo, jugador=jugador_sale, rol="TITULAR",
+        )
+        admin = User.objects.create_superuser("admin-dorsal-cambio", password="test")
+        self.client.force_login(admin)
+
+        respuesta = self.client.post(
+            f"/partido/{partido.id}/agregar-sustitucion-movil/",
+            {
+                "equipo": equipo.id,
+                "jugador_sale": jugador_sale.id,
+                "jugador_entra": jugador_entra.id,
+                "dorsal_entra": "27",
+            },
+        )
+
+        self.assertEqual(respuesta.status_code, 302)
+        jugador_entra.refresh_from_db()
+        self.assertEqual(jugador_entra.dorsal, 27)
+        self.assertTrue(SustitucionPartido.objects.filter(partido=partido, jugador_entra=jugador_entra).exists())
+
 
 class IncidenciasReglasEdadEnJuegoTests(TestCase):
     def setUp(self):

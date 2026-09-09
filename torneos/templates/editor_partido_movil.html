@@ -1494,12 +1494,15 @@
                 <label>Jugador que entra</label>
                 <select name="jugador_entra" required>
                     <optgroup label="{{ partido.equipo_local.nombre }}">
-                        {% for j in jugadores_local %}<option value="{{ j.id }}" data-equipo-id="{{ partido.equipo_local.id }}" data-en-cancha="{% if j.en_cancha_actual %}1{% else %}0{% endif %}" data-puede-entrar="{% if j.puede_entrar_actual %}1{% else %}0{% endif %}">{% if j.dorsal %}#{{ j.dorsal }} - {% endif %}{{ j.nombres|primeras_tres_palabras }}</option>{% endfor %}
+                        {% for j in jugadores_local %}<option value="{{ j.id }}" data-equipo-id="{{ partido.equipo_local.id }}" data-en-cancha="{% if j.en_cancha_actual %}1{% else %}0{% endif %}" data-puede-entrar="{% if j.puede_entrar_actual %}1{% else %}0{% endif %}" data-dorsal="{{ j.dorsal|default_if_none:'' }}">{% if j.dorsal %}#{{ j.dorsal }} - {% endif %}{{ j.nombres|primeras_tres_palabras }}</option>{% endfor %}
                     </optgroup>
                     <optgroup label="{{ partido.equipo_visitante.nombre }}">
-                        {% for j in jugadores_visitante %}<option value="{{ j.id }}" data-equipo-id="{{ partido.equipo_visitante.id }}" data-en-cancha="{% if j.en_cancha_actual %}1{% else %}0{% endif %}" data-puede-entrar="{% if j.puede_entrar_actual %}1{% else %}0{% endif %}">{% if j.dorsal %}#{{ j.dorsal }} - {% endif %}{{ j.nombres|primeras_tres_palabras }}</option>{% endfor %}
+                        {% for j in jugadores_visitante %}<option value="{{ j.id }}" data-equipo-id="{{ partido.equipo_visitante.id }}" data-en-cancha="{% if j.en_cancha_actual %}1{% else %}0{% endif %}" data-puede-entrar="{% if j.puede_entrar_actual %}1{% else %}0{% endif %}" data-dorsal="{{ j.dorsal|default_if_none:'' }}">{% if j.dorsal %}#{{ j.dorsal }} - {% endif %}{{ j.nombres|primeras_tres_palabras }}</option>{% endfor %}
                     </optgroup>
                 </select>
+
+                <label>Dorsal del jugador que entra</label>
+                <input type="number" name="dorsal_entra" min="1" max="999" inputmode="numeric" required data-dorsal-sustitucion placeholder="Ingresa el dorsal">
 
                 <label>Jugador que sale</label>
                 <select name="jugador_sale" required>
@@ -1967,6 +1970,16 @@ function filtrarJugadoresPorEquipo(form) {
         }
         actualizarBotonSelectorJugador(selector);
     });
+    sincronizarDorsalSustitucion(form);
+}
+
+function sincronizarDorsalSustitucion(form) {
+    if (!form) return;
+    const selector = form.querySelector('select[name="jugador_entra"]');
+    const input = form.querySelector('[data-dorsal-sustitucion]');
+    if (!selector || !input) return;
+    const opcion = selector.selectedOptions[0];
+    input.value = opcion ? (opcion.dataset.dorsal || '') : '';
 }
 
 function actualizarBotonSelectorJugador(selector) {
@@ -2166,6 +2179,13 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     document.querySelectorAll('select[name="jugador"], select[name="jugador_sale"], select[name="jugador_entra"]').forEach(inicializarSelectorJugador);
+
+    document.querySelectorAll('select[name="jugador_entra"]').forEach(function(selector) {
+        sincronizarDorsalSustitucion(selector.closest('form'));
+        selector.addEventListener('change', function() {
+            sincronizarDorsalSustitucion(selector.closest('form'));
+        });
+    });
 
     document.querySelectorAll('[data-ajuste-comite]').forEach(function(control) {
         sincronizarAjusteComite(control);

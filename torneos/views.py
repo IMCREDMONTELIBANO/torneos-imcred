@@ -6036,6 +6036,7 @@ def agregar_sustitucion_movil(request, partido_id):
     equipo_id = request.POST.get('equipo')
     jugador_sale_id = request.POST.get('jugador_sale')
     jugador_entra_id = request.POST.get('jugador_entra')
+    dorsal_entra = (request.POST.get('dorsal_entra') or '').strip()
     minuto = request.POST.get('minuto') or _minuto_evento_en_vivo(partido)
     observacion = request.POST.get('observacion') or ''
 
@@ -6058,6 +6059,8 @@ def agregar_sustitucion_movil(request, partido_id):
             messages.error(request, f'{jugador_sale.nombres} no puede salir porque no está actualmente en cancha.')
         elif jugador_entra.id in jugadores_en_cancha:
             messages.error(request, f'{jugador_entra.nombres} no puede entrar porque ya está actualmente en cancha.')
+        elif dorsal_entra and (not dorsal_entra.isdigit() or not 1 <= int(dorsal_entra) <= 999):
+            messages.error(request, 'El dorsal del jugador que entra debe ser un número entre 1 y 999.')
         elif (
             not categoria_permite_reingresos(partido.categoria)
             and SustitucionPartido.objects.filter(
@@ -6072,6 +6075,9 @@ def agregar_sustitucion_movil(request, partido_id):
             )
         else:
             with transaction.atomic():
+                if dorsal_entra and jugador_entra.dorsal != int(dorsal_entra):
+                    jugador_entra.dorsal = int(dorsal_entra)
+                    jugador_entra.save(update_fields=['dorsal'])
                 sustitucion = SustitucionPartido.objects.create(
                     partido=partido,
                     equipo=equipo,
