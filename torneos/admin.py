@@ -168,9 +168,10 @@ def importar_planilla_inscripcion(request):
             equipo.asistente_tecnico = asistente_tecnico.upper() if asistente_tecnico else equipo.asistente_tecnico
             equipo.cedula_at = cedula_at or equipo.cedula_at
             equipo.telefono_at = telefono_at or equipo.telefono_at
-            equipo.auxiliar_campo = auxiliar_campo.upper() if auxiliar_campo else equipo.auxiliar_campo
-            equipo.cedula_ac = cedula_ac or equipo.cedula_ac
-            equipo.telefono_ac = telefono_ac or equipo.telefono_ac
+            if categoria.torneo and categoria.torneo.habilitar_auxiliar_campo:
+                equipo.auxiliar_campo = auxiliar_campo.upper() if auxiliar_campo else equipo.auxiliar_campo
+                equipo.cedula_ac = cedula_ac or equipo.cedula_ac
+                equipo.telefono_ac = telefono_ac or equipo.telefono_ac
             equipo.activo = True
             equipo.save()
             creados = actualizados = omitidos = 0

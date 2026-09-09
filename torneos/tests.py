@@ -99,6 +99,44 @@ class VisibilidadPublicaTorneoTests(TestCase):
 
 
 class EquipoCuerpoTecnicoFormTests(TestCase):
+    def test_torneo_permite_configurar_auxiliar_de_campo(self):
+        self.assertIn("habilitar_auxiliar_campo", TorneoForm().fields)
+
+    def test_campos_auxiliar_dependen_de_configuracion_del_torneo(self):
+        torneo_sin_auxiliar = Torneo.objects.create(
+            nombre="Torneo sin auxiliar",
+            fecha_inicio=date(2026, 1, 1),
+            habilitar_auxiliar_campo=False,
+        )
+        torneo_con_auxiliar = Torneo.objects.create(
+            nombre="Torneo con auxiliar",
+            fecha_inicio=date(2026, 2, 1),
+            habilitar_auxiliar_campo=True,
+        )
+
+        form_sin_auxiliar = EquipoForm(torneo=torneo_sin_auxiliar)
+        form_con_auxiliar = EquipoForm(torneo=torneo_con_auxiliar)
+
+        for campo in ("auxiliar_campo", "cedula_ac", "telefono_ac"):
+            self.assertNotIn(campo, form_sin_auxiliar.fields)
+            self.assertIn(campo, form_con_auxiliar.fields)
+
+    def test_delegado_no_ve_auxiliar_si_torneo_no_lo_utiliza(self):
+        torneo = Torneo.objects.create(
+            nombre="Torneo sin AC",
+            fecha_inicio=date(2026, 3, 1),
+            habilitar_auxiliar_campo=False,
+        )
+        categoria = Categoria.objects.create(
+            nombre="Única", edad_minima=18, edad_maxima=80, torneo=torneo,
+        )
+        equipo = Equipo.objects.create(nombre="Equipo", categoria=categoria)
+
+        form = EquipoDelegadoForm(instance=equipo)
+
+        for campo in ("auxiliar_campo", "cedula_ac", "telefono_ac"):
+            self.assertNotIn(campo, form.fields)
+
     def test_datos_de_cada_miembro_aparecen_consecutivos(self):
         consecutivos = [
             "delegado", "telefono", "foto_delegado",
@@ -5568,7 +5606,11 @@ class ImportacionPartidosPlanillerosTests(TestCase):
 
 class ImportacionJugadoresPlanillaTests(TestCase):
     def setUp(self):
-        self.torneo = Torneo.objects.create(nombre="Veranero", fecha_inicio=date(2026, 1, 1))
+        self.torneo = Torneo.objects.create(
+            nombre="Veranero",
+            fecha_inicio=date(2026, 1, 1),
+            habilitar_auxiliar_campo=True,
+        )
         self.categoria = Categoria.objects.create(
             nombre="Senior Master",
             edad_minima=18,

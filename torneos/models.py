@@ -130,6 +130,11 @@ class Torneo(models.Model):
         verbose_name='Visible para el público',
         help_text='Desactiva esta opción para ocultar el torneo del portal y de los enlaces públicos.',
     )
+    habilitar_auxiliar_campo = models.BooleanField(
+        default=False,
+        verbose_name='Este torneo utiliza auxiliares de campo',
+        help_text='Activa esta opción para mostrar y permitir registrar el auxiliar de campo de cada equipo.',
+    )
     creado_en = models.DateTimeField(auto_now_add=True, verbose_name='Creado en')
 
     class Meta:

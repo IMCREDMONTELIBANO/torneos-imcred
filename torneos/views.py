@@ -2900,7 +2900,8 @@ def cuerpo_tecnico_live(equipo):
         ("Delegado", equipo.delegado, equipo.foto_delegado),
         ("Admin App", equipo.administrador_app, equipo.foto_administrador_app),
     ]
-    if equipo.auxiliar_campo:
+    torneo = equipo.categoria.torneo if equipo.categoria_id else None
+    if torneo and torneo.habilitar_auxiliar_campo and equipo.auxiliar_campo:
         integrantes.insert(2, ("Auxiliar de campo", equipo.auxiliar_campo, None))
 
     for indice, (cargo, nombre, foto) in enumerate(integrantes):
@@ -9496,9 +9497,10 @@ def gestion_importar_planilla(request):
             equipo.asistente_tecnico = asistente_tecnico.upper() if asistente_tecnico else equipo.asistente_tecnico
             equipo.cedula_at = cedula_at or equipo.cedula_at
             equipo.telefono_at = telefono_at or equipo.telefono_at
-            equipo.auxiliar_campo = auxiliar_campo.upper() if auxiliar_campo else equipo.auxiliar_campo
-            equipo.cedula_ac = cedula_ac or equipo.cedula_ac
-            equipo.telefono_ac = telefono_ac or equipo.telefono_ac
+            if categoria.torneo and categoria.torneo.habilitar_auxiliar_campo:
+                equipo.auxiliar_campo = auxiliar_campo.upper() if auxiliar_campo else equipo.auxiliar_campo
+                equipo.cedula_ac = cedula_ac or equipo.cedula_ac
+                equipo.telefono_ac = telefono_ac or equipo.telefono_ac
             equipo.administrador_app = administrador_app.upper() if administrador_app else equipo.administrador_app
             equipo.telefono_administrador_app = telefono_administrador_app or equipo.telefono_administrador_app
             equipo.activo = True

@@ -40,6 +40,7 @@ class TorneoForm(forms.ModelForm):
             "canchas_habilitadas",
             "estado",
             "visible_publico",
+            "habilitar_auxiliar_campo",
         ]
         widgets = {
             "fecha_inicio": forms.DateInput(attrs={"type": "date"}),
@@ -501,6 +502,11 @@ class EquipoForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         torneo = kwargs.pop("torneo", None)
         super().__init__(*args, **kwargs)
+        if torneo is None and self.instance and self.instance.pk and self.instance.categoria_id:
+            torneo = self.instance.categoria.torneo
+        if not torneo or not torneo.habilitar_auxiliar_campo:
+            for campo in ("auxiliar_campo", "cedula_ac", "telefono_ac"):
+                self.fields.pop(campo, None)
         self.fields["acceso_delegado_hasta"].input_formats = ["%Y-%m-%dT%H:%M", "%Y-%m-%d %H:%M:%S"]
         self.fields["acceso_delegado_hasta"].help_text = "El delegado solo podra editar este equipo hasta esta fecha y hora."
         self.fields["delegado_puede_editar_equipo"].help_text = "Permite cambiar datos del equipo, crear, editar o eliminar jugadores."
@@ -535,6 +541,15 @@ class EquipoDelegadoForm(forms.ModelForm):
             "telefono_ac",
             "escudo",
         ]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        torneo = None
+        if self.instance and self.instance.pk and self.instance.categoria_id:
+            torneo = self.instance.categoria.torneo
+        if not torneo or not torneo.habilitar_auxiliar_campo:
+            for campo in ("auxiliar_campo", "cedula_ac", "telefono_ac"):
+                self.fields.pop(campo, None)
 
 
 class EquipoFotosCuerpoTecnicoDelegadoForm(forms.ModelForm):
